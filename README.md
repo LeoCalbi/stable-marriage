@@ -18,6 +18,18 @@ To run the package, ensure the previous installation went fine and run:
 $ stablemarriage
 ```
 
+If you want to specify the number of nodes or the number of devices you can run:
+
+```
+$ stablemarriage [--N N] [--U U]
+```
+
+To get some help, run the following command:
+
+```
+$ stablemarriage -h
+```
+
 ## More info
 
 See [assignment](assignment.pdf) and [report](report.pdf).
