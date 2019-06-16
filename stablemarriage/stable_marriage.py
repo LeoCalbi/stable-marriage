@@ -4,22 +4,18 @@ import heapq
 import matplotlib.pyplot as plt
 import networkx as nx
 import concurrent.futures
-
-MIN_N = 2
-MAX_N = 20
-N = random.randint(MIN_N, MAX_N)
-E = random.randint(N - 1, 2 * N)
-
-MIN_U = N
-MAX_U = 100
-U = random.randint(MIN_U, MAX_U)
+from argparse import ArgumentParser
 
 
-def get_resources():
+def get_resources(N, U):
     '''
     Return a uniformly distributed partition of resources,
     based on the number of nodes and devices in the network
     '''
+    if U < N:
+        raise ValueError(
+            'The number of devices must be greater or equal than the number of nodes.'
+        )
     return constrained_sum_sample_pos(N, U)
 
 
@@ -172,7 +168,32 @@ class Probe():
 
 
 def main():
-    resources = get_resources()
+    # Default number of nodes
+    MIN_N = 2
+    MAX_N = 20
+    N = random.randint(MIN_N, MAX_N)
+
+    # Default number of devices
+    MIN_U = N
+    MAX_U = 100
+    U = random.randint(MIN_U, MAX_U)
+
+    parser = ArgumentParser(description='Stable marriage algorithm.')
+    parser.add_argument(
+        '--N', type=int, default=N, help='number of nodes in the connected graph'
+    )
+    parser.add_argument(
+        '--U', type=int, default=U, help='number of devices in the connected graph (must be >= N)'
+    )
+    args = parser.parse_args()
+    N = args.N
+    U = args.U
+
+    # Number of edges
+    # Eventually, it could go up to [N * (N - 1) / 2] (Complete graph)
+    E = random.randint(N - 1, 2 * N)
+
+    resources = get_resources(N, U)
     nodes = {Node(resources[i]) for i in range(N)}
     devices = {Device(rand_from_set(nodes)) for _ in range(U)}
     node_set = set()
@@ -226,10 +247,12 @@ def main():
     }
 
     fig1 = plt.figure(1)
+    fig1.canvas.set_window_title("Grafo iniziale")
     nx.draw(graph, **draw_args)
     fig1.set_facecolor("#D3D3D3")
 
     fig2 = plt.figure(2)
+    fig2.canvas.set_window_title("Grafo finale")
     nx.draw(final_graph, **draw_args)
     fig2.set_facecolor("#D3D3D3")
     plt.show()
