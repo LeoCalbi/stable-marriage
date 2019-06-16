@@ -16,19 +16,33 @@ U = random.randint(MIN_U, MAX_U)
 
 
 def get_resources():
+    '''
+    Return a uniformly distributed partition of resources,
+    based on the number of nodes and devices in the network
+    '''
     return constrained_sum_sample_pos(N, U)
 
 
 def constrained_sum_sample_pos(n, total):
+    '''
+    Return a uniformly distributed partition of n integers,
+    which sums to total
+    '''
     dividers = sorted(random.sample(range(1, total), n - 1))
     return [a - b for a, b in zip(dividers + [total], [0] + dividers)]
 
 
 def rand_from_set(rset):
+    '''
+    Return a random element from the given set
+    '''
     return random.sample(rset, 1)[0]
 
 
 class Node():
+    '''
+    Node of the connected graph
+    '''
 
     last_id = 0
 
@@ -40,6 +54,10 @@ class Node():
         self.neighbors = set()
 
     def add_device(self, device):
+        '''
+        Assign the given device to the current node,
+        if possible
+        '''
         if len(self.devices) < self.resources:
             heapq.heappush(self.devices, device)
         else:
@@ -48,9 +66,15 @@ class Node():
         return None
 
     def add_neighbor(self, node):
+        '''
+        Connect the given node to the current node
+        '''
         self.neighbors.add(node)
 
     def get_neighbors(self):
+        '''
+        Return the list of current's node neighbors
+        '''
         return self.neighbors
 
     def __hash__(self):
@@ -69,10 +93,16 @@ class Node():
 
 
 class Priority(IntEnum):
+    '''
+    Device priority representation
+    '''
     MIN, MIN_MED, MED, MED_MAX, MAX = range(1, 5 + 1)
 
 
 class Device():
+    '''
+    Device of the connected graph
+    '''
 
     last_id = 0
 
@@ -84,6 +114,9 @@ class Device():
         self.probe = Probe(self.connected_node)
 
     def assign_device(self):
+        '''
+        Find a node to assign the current device to
+        '''
         self.probe.find_node(self)
 
     def __str__(self):
@@ -105,6 +138,10 @@ class Device():
 
 
 class Probe():
+    '''
+    Explore the connected graph, starting form the node
+    directly connected to a specific device
+    '''
 
     def __init__(self, node):
         self.distance = 0
@@ -112,6 +149,9 @@ class Probe():
         self.visited = set()
 
     def find_node(self, device):
+        '''
+        Connect the given device to the first available node
+        '''
         self.distance = 0
         self.visited = set()
         while self.distance <= list(self.frontier.keys())[-1]:
@@ -155,7 +195,7 @@ def main():
         n.add_neighbor(rand_n)
         rand_n.add_neighbor(n)
 
-    # Assign devices
+    # Assigning devices
     with concurrent.futures.ThreadPoolExecutor(max_workers=U) as executor:
         for d in devices:
             executor.submit(d.assign_device())
